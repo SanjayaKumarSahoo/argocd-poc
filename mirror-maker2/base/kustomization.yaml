@@ -5,9 +5,4 @@ patches:
   - mirror-maker2-config.yaml
 resources:
   - mirror-maker2.yaml
-
-configMapGenerator:
-  - name: mirror-maker-2-metrics
-    behavior: create
-    files:
-      - metrics-config.yml
+  - metrics-config.yml
