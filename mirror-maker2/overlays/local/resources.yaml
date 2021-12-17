@@ -1,0 +1,17 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaMirrorMaker2
+metadata:
+  name: mirror-maker2
+spec:
+  replicas: 1
+  resources:
+    requests:
+      cpu: "0.5"
+      memory: 1Gi
+    limits:
+      cpu: "0.5"
+      memory: 1Gi
+  jvmOptions:
+    -Xms: 1024m
+    -Xmx: 2560m
+  jmxOptions: {}

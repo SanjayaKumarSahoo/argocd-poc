@@ -1,0 +1,25 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaMirrorMaker2
+metadata:
+  name: mirror-maker2
+spec:
+  replicas: 1
+  resources:
+    #requests:
+    #  cpu: "0.5"
+    #  memory: 500Mi
+    #limits:
+    #  cpu: "0.5"
+    #  memory: 500Mi
+  jvmOptions:
+    #-Xms: 1024m
+    #-Xmx: 2560m
+  # JMX port is opened 9999 without any security
+  jmxOptions:
+  metricsConfig:
+    type: jmxPrometheusExporter
+    valueFrom:
+      configMapKeyRef:
+        name: mirror-maker-2-metrics
+        key: metrics-config.yml
+

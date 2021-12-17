@@ -1,0 +1,56 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaMirrorMaker2
+metadata:
+  name: mirror-maker2
+spec:
+  connectCluster: "gravity"
+  clusters:
+    - alias: "central"
+      bootstrapServers: kafka.infra-system.svc.cluster.local.:9092
+    - alias: "gravity"
+      bootstrapServers: kafka-gvt.infra-system.svc.cluster.local.:8092
+      config:
+        # -1 means it will use the default replication factor configured in the broker
+        config.storage.replication.factor: 1
+        offset.storage.replication.factor: 1
+        status.storage.replication.factor: 1
+  mirrors:
+    - sourceCluster: "central"
+      targetCluster: "gravity"
+      sourceConnector:
+        pause: false
+        config:
+          sync.topic.acls.enabled: false
+          #This property can be set based on requirement of remote topics
+          replication.factor: 1
+          offset-syncs.topic.replication.factor: 1
+          sync.topic.configs.enabled: true
+          refresh.topics.enabled: true
+          refresh.topics.interval.seconds: 10
+          refresh.groups.enabled: true
+          readahead.queue.capacity: 500
+          replication.policy.class: "org.apache.kafka.connect.mirror.DefaultReplicationPolicy"
+          tasks.max: 20
+          key.converter: "org.apache.kafka.connect.converters.ByteArrayConverter"
+          value.converter: "org.apache.kafka.connect.converters.ByteArrayConverter"
+      heartbeatConnector:
+        pause: false
+        config:
+          tasks.max: 2
+          key.converter: "org.apache.kafka.connect.converters.ByteArrayConverter"
+          value.converter: "org.apache.kafka.connect.converters.ByteArrayConverter"
+          heartbeats.topic.replication.factor: 1
+          emit.heartbeats.interval.seconds": 5
+      checkpointConnector:
+        pause: false
+        config:
+          tasks.max: 1
+          key.converter": "org.apache.kafka.connect.converters.ByteArrayConverter"
+          value.converter": "org.apache.kafka.connect.converters.ByteArrayConverter"
+          checkpoints.topic.replication.factor: 1
+          emit.checkpoints.interval.seconds: 5
+          sync.group.offsets.enabled: true
+      topicsPattern: "central-lite.internal.sr.decoded.iap|central-lite.app.monitoring.internal.deviceinfo.iap|central-lite.app.monitoring.internal.connectivity.iap|central-lite.app.monitoring.internal.keepalive.iap|central-lite.decoded.iap.state.station|central-lite.ce.native.upstream.switch.monitoring.state|central-lite.ce.native.upstream.switch.monitoring.stats|central-lite.native.device.sw|device.event.sw|central-lite.device.keep.alive.sw|central-lite.decoded.iap.stats.station_stats|central-lite.decoded.iap.stats.ap_system_stats|central-lite.decoded.iap.state.power_info|central-lite.decoded.iap.stats.radio_stats|central-lite.decoded.iap.stats.vap_stats|central-lite.decoded.iap.stats.port_stats|central-lite.decoded.iap.stats.modem_stats|central-lite.decoded.iap.stats.tunnel_stats|central-lite.decoded.iap.stats.ssid_stats|central-lite.native.device.cx|central-lite.device.event.cx|central-lite.device.keep.alive.cx|central-lite.decoded.cx.state|central-lite.decoded.cx.stat|central-lite.native.device|central-lite.device.event"
+      topicsBlacklistPattern: .*[\-\.]internal, .*\.replica, __consumer_offsets
+      groupsPattern: ".*"
+      groupsBlacklistPattern: "console-consumer-.*,connect-.*,__.*"
